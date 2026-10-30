@@ -4,16 +4,64 @@
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     };
 
-    outputs = inputs@{ self, nixpkgs,...  }:let
-        supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
+    outputs = inputs@{ self, nixpkgs, ...  }: let
+        owner = "tryliner";
+        repo = "desktop";
+        pname = "Liner";
+        version = "0.2.10";
+        sha256 = "sha256-ndGT93KwGm3RxcU3NbZjELYUg48opsgmM+FD7R7kM0Q=";
+
+        supportedSystems = [ "x86_64-linux" ];
         forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in {
+        packages = forAllSystems(system: let
+            pkgs = import nixpkgs { inherit system; };
+
+            latestYml = pkgs.fetchurl {
+                url = "https://github.com/${owner}/${repo}/releases/download/v${version}/latest-linux.yml";
+                sha256 = sha256;
+            };
+            metadata = builtins.fromJSON (builtins.readFile (pkgs.runCommand "parse-yaml" { nativeBuildInputs = [ pkgs.yq ]; } ''
+            yq . ${latestYml} > $out
+            ''));
+
+            debInfo = builtins.head (builtins.filter (f: pkgs.lib.hasSuffix "_amd64.deb" f.url) metadata.files);
+
+        in {
+            liner = pkgs.stdenv.mkDerivation {
+                inherit pname version;
+
+                src = pkgs.fetchurl {
+                    url = "https://github.com/${owner}/${repo}/releases/download/v${version}/${debInfo.url}";
+                    hash = "sha512-${debInfo.sha512}";
+                };
+
+                nativeBuildInputs = with pkgs; [ dpkg autoPatchelfHook ];
+                buildInputs = with pkgs; [
+                    atk cups dbus cairo gtk3 pango
+                    libx11 libxcomposite libxdamage libxext libxfixes libxrandr
+                    libgbm expat libxcb libxkbcommon udev alsa-lib
+                    stdenv.cc.cc.lib
+                    nspr nss
+                ];
+
+                installPhase = ''
+                mkdir -p $out/bin
+
+                cp -r * $out
+                ln -s $out/opt/Liner/liner $out/bin/liner
+                '';
+            };
+            default = self.packages.${system}.liner;
+        });
+
         devShells = forAllSystems(system: let
-                pkgs = import nixpkgs { inherit system; };
+            pkgs = import nixpkgs { inherit system; };
         in {
             default = pkgs.mkShell {
                 shellHook = ''
                 echo Hii
+                echo ${system}
                 '';
             };
         });
