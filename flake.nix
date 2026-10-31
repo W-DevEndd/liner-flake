@@ -43,14 +43,19 @@
                     hash = "sha512-${debInfo.sha512}";
                 };
 
-                nativeBuildInputs = with pkgs; [ dpkg autoPatchelfHook ];
+                nativeBuildInputs = with pkgs; [ dpkg autoPatchelfHook makeWrapper ];
                 inherit buildInputs;
 
                 installPhase = ''
                 mkdir -p $out/bin
-
                 cp -r * $out
-                ln -s $out/opt/Liner/liner $out/bin/liner
+
+                makeWrapper $out/opt/Liner/liner $out/bin/${pname} \
+                    --argv0 "${pname}" \
+                    --add-flags "--ozone-platform-hint=auto" \
+                    --add-flags "--enable-features=UseOzonePlatform" \
+                    --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}" \
+                    --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH"
                 '';
             };
             default = self.packages.${system}.liner;
