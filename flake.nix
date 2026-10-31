@@ -45,7 +45,6 @@
                 src pnpmDeps
                 nativeBuildInputs;
 
-
             buildPhase = ''
                 runHook preBuild
 
