@@ -9,23 +9,24 @@
         repo = "desktop";
         pname = "liner";
         version = "0.2.10";
-        sha256 = "sha256-ndGT93KwGm3RxcU3NbZjELYUg48opsgmM+FD7R7kM0Q=";
 
         supportedSystems = [ "x86_64-linux" ];
         forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in {
         packages = forAllSystems(system: let
             pkgs = import nixpkgs { inherit system; };
+            pnpm =pkgs.pnpm_10;
 
-            latestYml = pkgs.fetchurl {
-                url = "https://github.com/${owner}/${repo}/releases/download/v${version}/latest-linux.yml";
-                sha256 = sha256;
+            src = pkgs.fetchFromGitHub {
+                inherit owner repo;
+                rev = "v${version}";
+                hash = "sha256-Utv76NXnlm2W43Yn4i7wq0859z5w8D6gX3vsQQ9E06w=";
             };
-            metadata = builtins.fromJSON (builtins.readFile (pkgs.runCommand "parse-yaml" { nativeBuildInputs = [ pkgs.yq ]; } ''
-            yq . ${latestYml} > $out
-            ''));
-
-            debInfo = builtins.head (builtins.filter (f: pkgs.lib.hasSuffix "_amd64.deb" f.url) metadata.files);
+            deps = pkgs.fetchPnpmDeps {
+                inherit pname version src pnpm;
+                fetcherVersion = 3;
+                hash = "sha256-Lhf49YsFL/cU+abowJthzxNrIaJIiW8K+EwaNZjzq8w=";
+            };
 
             buildInputs = with pkgs; [
                 atk cups dbus cairo gtk3 pango
@@ -35,31 +36,15 @@
                 nspr nss glib libGL
             ];
         in {
-            liner = pkgs.stdenv.mkDerivation {
-                inherit pname version;
+            liner = pkgs.stdenv.mkDerivation rec {
+                inherit pname version src;
 
-                src = pkgs.fetchurl {
-                    url = "https://github.com/${owner}/${repo}/releases/download/v${version}/${debInfo.url}";
-                    hash = "sha512-${debInfo.sha512}";
-                };
+                pnpmDeps = deps;
 
-                nativeBuildInputs = with pkgs; [ dpkg autoPatchelfHook makeWrapper ];
-                inherit buildInputs;
 
                 installPhase = ''
-                mkdir -p $out/bin
-                cp -r ./opt $out/
-                cp -r ./usr/share $out/
-
-                substituteInPlace $out/share/applications/liner.desktop \
-                    --replace-fail "Exec=/opt/Liner/liner" "Exec=liner"
-
-                makeWrapper $out/opt/Liner/liner $out/bin/${pname} \
-                    --argv0 "${pname}" \
-                    --add-flags "--ozone-platform-hint=auto" \
-                    --add-flags "--enable-features=UseOzonePlatform" \
-                    --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}" \
-                    --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH"
+                    mkdir -p $out
+                    cp * -r $out
                 '';
             };
             default = self.packages.${system}.liner;
