@@ -50,6 +50,13 @@
                 ];
                 inherit buildInputs;
 
+                buildPhase = ''
+                    runHook preBuild
+
+                    pnpm run build
+
+                    runHook postBuild
+                '';
                 installPhase = ''
                     mkdir -p $out
                     cp * -r $out
