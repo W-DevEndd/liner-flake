@@ -48,9 +48,10 @@
 
                 installPhase = ''
                 mkdir -p $out/bin
-                cp -r * $out
+                cp -r ./opt $out/
+                cp -r ./usr/share $out/
 
-                substituteInPlace $out/usr/share/applications/liner.desktop \
+                substituteInPlace $out/share/applications/liner.desktop \
                     --replace-fail "Exec=/opt/Liner/liner" "Exec=liner"
 
                 makeWrapper $out/opt/Liner/liner $out/bin/${pname} \
