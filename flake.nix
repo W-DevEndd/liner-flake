@@ -45,9 +45,10 @@
                     nodejs_22
                     pnpm
                     (pnpmConfigHook.override {  inherit pnpm; })
-                    autoPatchelfHook
-                    makeWrapper
+                    # autoPatchelfHook
+                    # makeWrapper
                 ];
+                inherit buildInputs;
 
                 installPhase = ''
                     mkdir -p $out
