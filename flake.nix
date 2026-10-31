@@ -27,6 +27,13 @@
 
             debInfo = builtins.head (builtins.filter (f: pkgs.lib.hasSuffix "_amd64.deb" f.url) metadata.files);
 
+            buildInputs = with pkgs; [
+                atk cups dbus cairo gtk3 pango
+                libx11 libxcomposite libxdamage libxext libxfixes libxrandr
+                libgbm expat libxcb libxkbcommon udev alsa-lib
+                stdenv.cc.cc.lib
+                nspr nss glib libGL
+            ];
         in {
             liner = pkgs.stdenv.mkDerivation {
                 inherit pname version;
@@ -37,13 +44,7 @@
                 };
 
                 nativeBuildInputs = with pkgs; [ dpkg autoPatchelfHook ];
-                buildInputs = with pkgs; [
-                    atk cups dbus cairo gtk3 pango
-                    libx11 libxcomposite libxdamage libxext libxfixes libxrandr
-                    libgbm expat libxcb libxkbcommon udev alsa-lib
-                    stdenv.cc.cc.lib
-                    nspr nss
-                ];
+                inherit buildInputs;
 
                 installPhase = ''
                 mkdir -p $out/bin
