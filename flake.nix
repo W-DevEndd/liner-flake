@@ -41,6 +41,13 @@
 
                 pnpmDeps = deps;
 
+                nativeBuildInputs = with pkgs; [
+                    nodejs_22
+                    pnpm
+                    (pnpmConfigHook.override {  inherit pnpm; })
+                    autoPatchelfHook
+                    makeWrapper
+                ];
 
                 installPhase = ''
                     mkdir -p $out
