@@ -7,7 +7,7 @@
     outputs = inputs@{ self, nixpkgs, ...  }: let
         owner = "tryliner";
         repo = "desktop";
-        pname = "Liner";
+        pname = "liner";
         version = "0.2.10";
         sha256 = "sha256-ndGT93KwGm3RxcU3NbZjELYUg48opsgmM+FD7R7kM0Q=";
 
