@@ -13,17 +13,24 @@
         pname = "liner";
         version = "0.2.10";
 
-        pnpm = pkgs.pnpm_10;
+        # Hashes
         src = pkgs.fetchFromGitHub {
             inherit owner repo;
             rev = "v${version}";
             hash = "sha256-Utv76NXnlm2W43Yn4i7wq0859z5w8D6gX3vsQQ9E06w=";
         };
-        deps = pkgs.fetchPnpmDeps {
+        pnpmDeps = pkgs.fetchPnpmDeps {
             inherit pname version src pnpm;
             fetcherVersion = 3;
             hash = "sha256-Lhf49YsFL/cU+abowJthzxNrIaJIiW8K+EwaNZjzq8w=";
         };
+
+        # Build
+        pnpm = pkgs.pnpm_10;
+        nativeBuildInputs = with pkgs; [
+            nodejs_22 pnpm
+            (pnpmConfigHook.override {  inherit pnpm; })
+        ];
         buildInputs = with pkgs; [
             atk cups dbus cairo gtk3 pango
             libx11 libxcomposite libxdamage libxext libxfixes libxrandr
@@ -33,16 +40,10 @@
         ];
     in {
         packages.default = pkgs.stdenv.mkDerivation rec {
-            inherit pname version src;
-
-            pnpmDeps = deps;
-
-            nativeBuildInputs = with pkgs; [
-                nodejs_22
-                pnpm
-                (pnpmConfigHook.override {  inherit pnpm; })
-            ];
-            # inherit buildInputs;
+            inherit
+                pname version
+                src pnpmDeps
+                nativeBuildInputs;
 
 
             buildPhase = ''
