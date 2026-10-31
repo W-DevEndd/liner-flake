@@ -4,7 +4,7 @@ A dynamic Nix Flake to package the [**Liner Desktop**](https://tryliner.fun/) ap
 ![screenshot](./screenshots/image.png)
 
 ## Supported
-* x86_40-linux
+* x86_64-linux
 
 ## Usage
 
