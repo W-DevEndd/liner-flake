@@ -2,6 +2,7 @@
     description = "Liner music client port to flake";
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+        flake-utils.url = "github:numtide/flake-utils";
     };
 
     outputs = inputs@{ self, nixpkgs, ...  }: let
