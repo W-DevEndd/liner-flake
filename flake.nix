@@ -46,10 +46,7 @@
                     nodejs_22
                     pnpm
                     (pnpmConfigHook.override {  inherit pnpm; })
-                    # autoPatchelfHook
-                    # makeWrapper
                 ];
-                inherit buildInputs;
 
                 buildPhase = ''
                     runHook preBuild
