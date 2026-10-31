@@ -5,73 +5,57 @@
         flake-utils.url = "github:numtide/flake-utils";
     };
 
-    outputs = inputs@{ self, nixpkgs, ...  }: let
+    outputs = inputs@{ self, flake-utils, nixpkgs, ...  }: inputs.flake-utils.lib.eachDefaultSystem(system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+
         owner = "tryliner";
         repo = "desktop";
         pname = "liner";
         version = "0.2.10";
 
-        supportedSystems = [ "x86_64-linux" ];
-        forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+        pnpm = pkgs.pnpm_10;
+        src = pkgs.fetchFromGitHub {
+            inherit owner repo;
+            rev = "v${version}";
+            hash = "sha256-Utv76NXnlm2W43Yn4i7wq0859z5w8D6gX3vsQQ9E06w=";
+        };
+        deps = pkgs.fetchPnpmDeps {
+            inherit pname version src pnpm;
+            fetcherVersion = 3;
+            hash = "sha256-Lhf49YsFL/cU+abowJthzxNrIaJIiW8K+EwaNZjzq8w=";
+        };
+        buildInputs = with pkgs; [
+            atk cups dbus cairo gtk3 pango
+            libx11 libxcomposite libxdamage libxext libxfixes libxrandr
+            libgbm expat libxcb libxkbcommon udev alsa-lib
+            stdenv.cc.cc.lib
+            nspr nss glib libGL
+        ];
     in {
-        packages = forAllSystems(system: let
-            pkgs = import nixpkgs { inherit system; };
-            pnpm =pkgs.pnpm_10;
+        packages.default = pkgs.stdenv.mkDerivation rec {
+            inherit pname version src;
 
-            src = pkgs.fetchFromGitHub {
-                inherit owner repo;
-                rev = "v${version}";
-                hash = "sha256-Utv76NXnlm2W43Yn4i7wq0859z5w8D6gX3vsQQ9E06w=";
-            };
-            deps = pkgs.fetchPnpmDeps {
-                inherit pname version src pnpm;
-                fetcherVersion = 3;
-                hash = "sha256-Lhf49YsFL/cU+abowJthzxNrIaJIiW8K+EwaNZjzq8w=";
-            };
+            pnpmDeps = deps;
 
-            buildInputs = with pkgs; [
-                atk cups dbus cairo gtk3 pango
-                libx11 libxcomposite libxdamage libxext libxfixes libxrandr
-                libgbm expat libxcb libxkbcommon udev alsa-lib
-                stdenv.cc.cc.lib
-                nspr nss glib libGL
+            nativeBuildInputs = with pkgs; [
+                nodejs_22
+                pnpm
+                (pnpmConfigHook.override {  inherit pnpm; })
             ];
-        in {
-            liner = pkgs.stdenv.mkDerivation rec {
-                inherit pname version src;
+            # inherit buildInputs;
 
-                pnpmDeps = deps;
 
-                nativeBuildInputs = with pkgs; [
-                    nodejs_22
-                    pnpm
-                    (pnpmConfigHook.override {  inherit pnpm; })
-                ];
+            buildPhase = ''
+                runHook preBuild
 
-                buildPhase = ''
-                    runHook preBuild
+                pnpm run build
 
-                    pnpm run build
-
-                    runHook postBuild
-                '';
-                installPhase = ''
-                    mkdir -p $out
-                    cp * -r $out
-                '';
-            };
-            default = self.packages.${system}.liner;
-        });
-
-        devShells = forAllSystems(system: let
-            pkgs = import nixpkgs { inherit system; };
-        in {
-            default = pkgs.mkShell {
-                shellHook = ''
-                echo Hii
-                echo ${system}
-                '';
-            };
-        });
-    };
+                runHook postBuild
+            '';
+            installPhase = ''
+                mkdir -p $out
+                cp * -r $out
+            '';
+        };
+    });
 }
