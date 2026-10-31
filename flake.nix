@@ -50,6 +50,9 @@
                 mkdir -p $out/bin
                 cp -r * $out
 
+                substituteInPlace $out/usr/share/applications/liner.desktop \
+                    --replace-fail "Exec=/opt/Liner/liner" "Exec=liner"
+
                 makeWrapper $out/opt/Liner/liner $out/bin/${pname} \
                     --argv0 "${pname}" \
                     --add-flags "--ozone-platform-hint=auto" \
