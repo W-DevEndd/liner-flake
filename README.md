@@ -1,10 +1,11 @@
 # Liner Flake ❄️
 
-A dynamic Nix Flake to package the [**Liner Desktop**](https://tryliner.fun/) application (Liner Music Client) for NixOS.
+A Nix Flake to package the [**Liner Desktop**](https://tryliner.fun/) application (Liner Music Player) for NixOS.
 ![screenshot](./screenshots/image.png)
 
 ## Supported
 * x86_64-linux
+* aarch64-linux
 
 ## Usage
 
@@ -80,6 +81,7 @@ or with home-namager:
 ## Special Thanks
 - [me](https:github.com/W-DevEndd) — Maintain this repo.
 - [@tryliner](https://github.com/tryliner) — The upstream project.
+- [Google AI Search](https:google.com) — Unlimit vibecoding:)
 
 ## License
 [MIT LICENSE](./LICENSE)
