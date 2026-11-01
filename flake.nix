@@ -76,7 +76,7 @@
                 mkdir -p $out/bin
 
                 makeWrapper ${pkgs.electron_44}/bin/electron $out/bin/${pname} \
-                    --add-flags "$out/lib/liner" \
+                    --add-flags "$out/opt/liner" \
                     --add-flags "--ozone-platform-hint=auto" \
                     --add-flags "--enable-features=WaylandWindowDecorations" \
                     --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}" \
