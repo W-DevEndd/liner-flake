@@ -13,6 +13,15 @@
         pname = "liner";
         version = "0.2.10";
 
+        desktopItems = [ (pkgs.makeDesktopItem {
+            name = pname;
+            exec = pname;
+            icon = pname;
+            comment = "Liner Music Player";
+            desktopName = "Liner";
+            categories = [ "Audio" ];
+        }) ];
+
         # Hashes
         src = pkgs.fetchFromGitHub {
             inherit owner repo;
@@ -30,6 +39,8 @@
         nativeBuildInputs = with pkgs; [
             nodejs_22 pnpm
             (pnpmConfigHook.override {  inherit pnpm; })
+            makeWrapper
+            copyDesktopItems
         ];
         buildInputs = with pkgs; [
             atk cups dbus cairo gtk3 pango
@@ -42,7 +53,7 @@
         packages.default = pkgs.stdenv.mkDerivation rec {
             inherit
                 pname version
-                src pnpmDeps
+                src pnpmDeps desktopItems
                 nativeBuildInputs;
 
             buildPhase = ''
@@ -53,8 +64,30 @@
                 runHook postBuild
             '';
             installPhase = ''
-                mkdir -p $out
-                cp * -r $out
+                runHook preInstall
+
+                # mkdir -p $out/test
+                # cp -r * $out/test/
+
+                mkdir -p $out/opt/liner
+                cp -r dist dist-electron package.json $out/opt/liner/
+                cp -r node_modules $out/opt/liner/
+
+                mkdir -p $out/bin
+
+                makeWrapper ${pkgs.electron_44}/bin/electron $out/bin/${pname} \
+                    --add-flags "$out/lib/liner" \
+                    --add-flags "--ozone-platform-hint=auto" \
+                    --add-flags "--enable-features=WaylandWindowDecorations" \
+                    --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}" \
+                    --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH"
+
+                mkdir -p $out/share/icons/hicolor
+                for size in 16x16 32x32 48x48 64x64 128x128 256x256 512x512; do
+                    [ -f "build/icons/$size.png" ] && install -D build/icons/$size.png $out/share/icons/hicolor/$size/apps/${pname}.png
+                done
+
+                runHook postInstall
             '';
         };
     });
