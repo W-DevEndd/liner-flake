@@ -18,6 +18,22 @@
         "type": "github"
       }
     },
+    "liner": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793581971,
+        "narHash": "sha256-v3gK7fxi5sRUMZdYTWSOuH9oePCeLvBrjg3nmxy8KZw=",
+        "owner": "tryliner",
+        "repo": "desktop",
+        "rev": "698ed8f4b3b5544de79451572c4643acbd3b7e86",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tryliner",
+        "repo": "desktop",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1793110635,
@@ -37,6 +53,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "liner": "liner",
         "nixpkgs": "nixpkgs"
       }
     },

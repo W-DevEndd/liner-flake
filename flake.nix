@@ -3,15 +3,19 @@
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
         flake-utils.url = "github:numtide/flake-utils";
+
+        liner = {
+            url = "github:tryliner/desktop";
+            flake = false;
+        };
     };
 
-    outputs = inputs@{ self, flake-utils, nixpkgs, ...  }: inputs.flake-utils.lib.eachDefaultSystem(system: let
+    outputs = inputs@{ self, liner, flake-utils, nixpkgs, ...  }: inputs.flake-utils.lib.eachDefaultSystem(system: let
         pkgs = nixpkgs.legacyPackages.${system};
+        packageDotJSON = builtins.fromJSON (builtins.readFile "${liner}/package.json");
 
-        owner = "tryliner";
-        repo = "desktop";
-        pname = "liner";
-        version = "0.2.10";
+        pname = packageDotJSON.desktopName;
+        version = packageDotJSON.version;
 
         desktopItems = [ (pkgs.makeDesktopItem {
             name = pname;
@@ -23,15 +27,11 @@
         }) ];
 
         # Hashes
-        src = pkgs.fetchFromGitHub {
-            inherit owner repo;
-            rev = "v${version}";
-            hash = "sha256-Utv76NXnlm2W43Yn4i7wq0859z5w8D6gX3vsQQ9E06w=";
-        };
+        src = liner;
         pnpmDeps = pkgs.fetchPnpmDeps {
             inherit pname version src pnpm;
             fetcherVersion = 3;
-            hash = "sha256-Lhf49YsFL/cU+abowJthzxNrIaJIiW8K+EwaNZjzq8w=";
+            hash = "sha256-7D34DBAqFGNFQ+AqKkK2FKsaZDKB3kbtfRR0BSq/tI4=";
         };
 
         # Build
