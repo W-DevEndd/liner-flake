@@ -77,8 +77,6 @@
 
                 makeWrapper ${pkgs.electron_44}/bin/electron $out/bin/${pname} \
                     --add-flags "$out/opt/liner" \
-                    --add-flags "--ozone-platform-hint=auto" \
-                    --add-flags "--enable-features=WaylandWindowDecorations" \
                     --prefix LD_LIBRARY_PATH : "${pkgs.lib.makeLibraryPath buildInputs}" \
                     --prefix XDG_DATA_DIRS : "$GSETTINGS_SCHEMAS_PATH"
 
