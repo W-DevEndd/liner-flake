@@ -88,5 +88,8 @@
                 runHook postInstall
             '';
         };
+        devShell = pkgs.mkShell {
+            packages = with pkgs; [ dex ];
+        };
     });
 }
